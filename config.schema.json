@@ -1,0 +1,27 @@
+{
+    "pluginAlias": "GrumpTechHomebridgeTemplate",
+    "pluginType": "platform",
+    "singular": true,
+    "headerDisplay": "This plugin is provided by [GrumpTech](https://github.com/pricemi115/)",
+    "footerDisplay": "Be kind.....to everyone",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "settings": {
+                "title": "Settings",
+                "type": "object",
+                "properties": {
+                    "setting_x": {
+                        "title": "Setting X",
+                        "description": "A plug in setting",
+                        "type": "number",
+                        "default": "1",
+                        "required": true
+                    }
+                }
+            }
+        }
+    },
+    "form": null,
+    "display": null
+}

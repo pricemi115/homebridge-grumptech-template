@@ -1,0 +1,53 @@
+{
+  "name": "homebridge-grumptech-template",
+  "displayName": "Homebridge Template",
+  "version": "0.0.1",
+  "description": "Template for a homebridge plugin.",
+  "main": "dist/homebridge-grumptech-template.js",
+  "files": [
+    "dist/homebridge-grumptech-template.js",
+    "config/config-sample.json",
+    "config.schema.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md",
+    "assets/"
+  ],
+  "config_info": {
+    "remarks": [
+      "The 'plugin' and 'platform' names MUST match the names called out in the 'platforms' section of the active config.json file.",
+      "If these values are changed, the module will need to be rebuilt. Run 'npm run build'."
+    ],
+    "plugin": "homebridge-grumptech-template",
+    "platform": "GrumpTechHomebridgeTemplate"
+  },
+  "scripts": {
+    "prepare": "npm run build",
+    "run": "DEBUG=homebridge* homebridge -D -Q -P ./dist -U ./debug",
+    "build": "rollup -c rollup.config.js"
+  },
+  "engines": {
+    "homebridge": ">=1.1.0"
+  },
+  "keywords": [
+    "homebridge",
+    "homebridge-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pricemi115/homebridge-grumptech-template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pricemi115/homebridge-grumptech-template/issues"
+  },
+  "author": "GrumpTech (Michael J. Price)",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0",
+    "homebridge": "^1.3.2",
+    "rollup-plugin-node-polyfills": "^0.2.1"
+  },
+  "dependencies": {
+    "debug": "^4.3.1"
+  }
+}

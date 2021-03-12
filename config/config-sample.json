@@ -1,0 +1,20 @@
+{
+  "bridge": {
+    "name": "GrumpTech Homebridge Template",
+    "username": "36:FF:22:46:55:22",
+    "port": 51900,
+    "pin": "000-00-000"
+  },
+
+  "description": "GrumpTech Homebridge Plugin Template",
+
+  "platforms": [
+    {
+      "platform" : "GrumpTechHomebridgeTemplate",
+      "name" : "homebridge-grumptech-template",
+      "settings": {
+
+      }
+    }
+  ]
+}
