@@ -2,6 +2,30 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+var modCrypto = require('crypto');
+
+function _interopNamespace(e) {
+  if (e && e.__esModule) return e;
+  var n = Object.create(null);
+  if (e) {
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'default') {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () {
+            return e[k];
+          }
+        });
+      }
+    });
+  }
+  n['default'] = e;
+  return Object.freeze(n);
+}
+
+var modCrypto__namespace = /*#__PURE__*/_interopNamespace(modCrypto);
+
 var config_info = {
 	remarks: [
 		"The 'plugin' and 'platform' names MUST match the names called out in the 'platforms' section of the active config.json file.",
@@ -60,8 +84,9 @@ import {
 // Internal dependencies
 
 // Configuration constants.
-const PLUGIN_NAME   = config_info.plugin;
-const PLATFORM_NAME = config_info.platform;
+const ACCESSORY_VERSION = 1;
+const PLUGIN_NAME       = config_info.plugin;
+const PLATFORM_NAME     = config_info.platform;
 
 // Accessory must be created from PlatformAccessory Constructor
 let _PlatformAccessory  = undefined;
@@ -172,6 +197,15 @@ class HomebridgePlatformPlugin {
     async _doInitialization() {
 
         this._log(`Homebridge Plug-In ${PLATFORM_NAME} has finished launching.`);
+
+        // Update/Flush any accessories that are not from this version
+        for (const accessory of this._accessories.values()) {
+            if (!accessory.context.hasOwnProperty('VERSION') ||
+                (accessory.context.VERSION !== ACCESSORY_VERSION)) {
+                // This accessory needs to be replaced.
+                this._upgradeAccessory(accessory);
+            }
+        }
         if (this._config.hasOwnProperty('settings')) {
             // Get the system configuration,
             this._config.settings;
@@ -188,6 +222,10 @@ class HomebridgePlatformPlugin {
             theAccessory = new _PlatformAccessory(theAccessoryName, uuid);
             // Create our services.
             theAccessory.addService(_hap.Service.Switch, theAccessoryName);
+
+            // Add unique id and accessory version to the context/.
+            theAccessory.context.ID         = modCrypto__namespace.createHash('sha256');
+            theAccessory.context.VERSION    = ACCESSORY_VERSION;
 
             // register the manual refresh switch
             this._api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [theAccessory]);
@@ -209,8 +247,7 @@ class HomebridgePlatformPlugin {
     ======================================================================== */
     configureAccessory(accessory) {
 
-        // This application has no need for history of the Battery Service accessories..
-        // But we will record them anyway to remove them once the accessory loads.
+        // Ensure we do not know this accessory before configuring and registering it.
         let found = false;
         for (const acc of this._accessories.values()) {
             if (acc === accessory) {
@@ -219,7 +256,8 @@ class HomebridgePlatformPlugin {
             }
         }
         if (!found) {
-            this._accessories.set(accessory.displayName, accessory);
+            // Configure the accessory (also registers it.)
+            this._configureAccessory(accessory);
         }
     }
 
@@ -239,6 +277,9 @@ class HomebridgePlatformPlugin {
 
         this._log.debug("Configuring accessory %s", accessory.displayName);
 
+        // Get the accessory identifier from the contect.
+        const id = accessory.context.ID;
+
         // Register to handle the Identify request for the accessory.
         accessory.on(_PlatformAccessory.PlatformAccessoryEvent.IDENTIFY, () => {
             this._log("%s identified!", accessory.displayName);
@@ -254,11 +295,14 @@ class HomebridgePlatformPlugin {
             charOn.on('set', this._handleOnSet.bind(this, accessory));
         }
 
+        // Update the accessory information
+        this._updateAccessoryInfo(accessory, {model:"GrumpTech Homebridge Template", serialnum:id});
+
         // Is this accessory new to us?
-        if (!this._accessories.has(accessory.displayName)){
+        if (!this._accessories.has(id)){
             // Update our accessory listing
             this._log.debug(`Adding accessory '${accessory.displayName} to the accessories list. Count:${this._accessories.size}`);
-            this._accessories.set(accessory.displayName, accessory);
+            this._accessories.set(id, accessory);
         }
     }
 
@@ -318,6 +362,22 @@ class HomebridgePlatformPlugin {
     }
 
  /* ========================================================================
+    Description: Removes all of the `Battery Service` platform accessories.
+
+    @param {object} [accessory] - accessory to be up/downgraded.
+    ======================================================================== */
+    _upgradeAccessories(accessory) {
+
+        this._log.debug(`Removing Accessories: removeAll:${removeAll}`);
+
+        if (!accessory.context.hasOwnProperty('VERSION') ||
+        (accessory.context.VERSION !== ACCESSORY_VERSION)) {
+            // By default, just remove the accessory and it will be re-created as needed.
+            this._removeAccessory(accessory);
+        }
+    }
+
+ /* ========================================================================
     Description: Update an accessory
 
     @param {object} [accessory] - accessory to be updated.
@@ -337,7 +397,7 @@ class HomebridgePlatformPlugin {
         }
         if ((info === undefined) ||
             (!info.hasOwnProperty('model'))     || ((typeof(info.model)      !== 'string') || (info.model instanceof Error)) ||
-            (!info.hasOwnProperty('serialnum')) || ((typeof(info.serialnum)  !== 'string') || (info.model instanceof Error))   ) {
+            (!info.hasOwnProperty('serialnum')) || ((typeof(info.serialnum)  !== 'string') || (info.serialnum instanceof Error))   ) {
             throw new TypeError(`info must be an object with properties named 'model' and 'serialnum' that are eother strings or Error`);
         }
 
@@ -353,6 +413,9 @@ class HomebridgePlatformPlugin {
 
             /* Serial Number */
             accessoryInfoService.updateCharacteristic(_hap.Characteristic.SerialNumber, info.serialnum);
+
+            /* Software Version */
+            accessoryInfoService.updateCharacteristic(_hap.Characteristic.SoftwareRevision, `v${ACCESSORY_VERSION}`);
         }
     }
 
