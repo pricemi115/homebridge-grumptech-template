@@ -395,7 +395,7 @@ class HomebridgePlatformPlugin {
             accessoryInfoService.updateCharacteristic(_hap.Characteristic.SerialNumber, info.serialnum);
 
             /* Software Version */
-            accessoryInfoService.updateCharacteristic(_hap.Characteristic.SoftwareRevision, `v${ACCESSORY_VERSION}`);
+            accessoryInfoService.updateCharacteristic(_hap.Characteristic.SoftwareRevision, `v${accessory.context.VERSION}`);
         }
     }
 
