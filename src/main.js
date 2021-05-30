@@ -7,6 +7,7 @@
 
 const _debug = require('debug')('homebridge');
 import * as modCrypto from 'crypto';
+// eslint-disable-next-line no-unused-vars
 import { version as PLUGIN_VER }      from '../package.json';
 import { config_info as CONFIG_INFO } from '../package.json';
 
@@ -56,7 +57,6 @@ const PLUGIN_NAME       = CONFIG_INFO.plugin;
 const PLATFORM_NAME     = CONFIG_INFO.platform;
 
 // Internal Constants
-const DEFAULT_PING_COUNT            = 5;
 
 // Accessory must be created from PlatformAccessory Constructor
 let _PlatformAccessory  = undefined;
@@ -76,7 +76,7 @@ export default (homebridgeAPI) => {
 
     // Accessory must be created from PlatformAccessory Constructor
     _PlatformAccessory  = homebridgeAPI.platformAccessory;
-    if (!_PlatformAccessory.hasOwnProperty('PlatformAccessoryEvent')) {
+    if (!Object.prototype.hasOwnProperty.call(_PlatformAccessory, 'PlatformAccessoryEvent')) {
         // Append the PlatformAccessoryEvent.IDENTITY enum to the platform accessory reference.
         // This allows us to not need to import anything from 'homebridge'.
         const platformAccessoryEvent = {
@@ -150,6 +150,7 @@ class HomebridgePlatformPlugin {
     @param {object} [options]  - Typically containing a "cleanup" or "exit" member.
     @param {object} [err]      - The source of the event trigger.
     ======================================================================== */
+    // eslint-disable-next-line no-unused-vars
     async _destructor(options, err) {
         // Is there an indication that the system is either exiting or needs to
         // be cleaned up?
@@ -174,7 +175,7 @@ class HomebridgePlatformPlugin {
 
         // Update/Flush any accessories that are not from this version
         for (const accessory of this._accessories.values()) {
-            if (!accessory.context.hasOwnProperty('VERSION') ||
+            if (!Object.prototype.hasOwnProperty.call(accessory.context, 'VERSION') ||
                 (accessory.context.VERSION !== ACCESSORY_VERSION)) {
                 // This accessory needs to be replaced.
                 this._upgradeAccessory(accessory);
@@ -182,12 +183,13 @@ class HomebridgePlatformPlugin {
         }
 
         let theSettings = undefined;
-        if (this._config.hasOwnProperty('settings')) {
+        if (Object.prototype.hasOwnProperty.call(this._config, 'settings')) {
             // Get the system configuration,
             theSettings = this._config.settings;
         }
 
         // Check for Settings
+        // eslint-disable-next-line no-empty
         if (theSettings != undefined) {
         }
 
@@ -337,22 +339,6 @@ class HomebridgePlatformPlugin {
         // Delete each of the registered accessories, but do so via the _removeAccessory()
         // function to unregister event handlers, etc.
         for (const accessory of this._accessories.values()) {
-            his._removeAccessory(accessory);
-        }
-    }
-
- /* ========================================================================
-    Description: Removes all of the `Battery Service` platform accessories.
-
-    @param {object} [accessory] - accessory to be up/downgraded.
-    ======================================================================== */
-    _upgradeAccessories(accessory) {
-
-        this._log.debug(`Removing Accessories: removeAll:${removeAll}`);
-
-        if (!accessory.context.hasOwnProperty('VERSION') ||
-        (accessory.context.VERSION !== ACCESSORY_VERSION)) {
-            // By default, just remove the accessory and it will be re-created as needed.
             this._removeAccessory(accessory);
         }
     }
@@ -376,8 +362,8 @@ class HomebridgePlatformPlugin {
             throw new TypeError(`Accessory must be a PlatformAccessory`);
         }
         if ((info === undefined) ||
-            (!info.hasOwnProperty('model'))     || ((typeof(info.model)      !== 'string') || (info.model instanceof Error)) ||
-            (!info.hasOwnProperty('serialnum')) || ((typeof(info.serialnum)  !== 'string') || (info.serialnum instanceof Error))   ) {
+            (!Object.prototype.hasOwnProperty.call(info, 'model'))     || ((typeof(info.model)      !== 'string') || (info.model instanceof Error)) ||
+            (!Object.prototype.hasOwnProperty.call(info, 'serialnum')) || ((typeof(info.serialnum)  !== 'string') || (info.serialnum instanceof Error))   ) {
             throw new TypeError(`info must be an object with properties named 'model' and 'serialnum' that are eother strings or Error`);
         }
 
